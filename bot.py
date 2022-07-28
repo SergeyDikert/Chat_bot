@@ -10,26 +10,27 @@ from config import TOKEN
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
+                             # обработка команд /start
 foto = open('upgrade.jpg', 'rb')
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
     await bot.send_photo(message.from_user.id, foto)
-    await bot.send_message(message.from_user.id,  '<b>Здравствуйте!</b> \nВас приветствует команда UP GRADE! <i>Можем чем-то помочь?</i>', reply_markup=kb_client, parse_mode='HTML')
+    await bot.send_message(message.from_user.id,  '<b>Здравствуйте!</b> \nВас приветствует команда UP GRADE! <i>Можем чем-то помочь?</i>', reply_markup=kb_client, parse_mode='HTML') #parse_mode даёт возможность использовать HTML разметку
 
 
-
+                             # обработка команд /help
 @dp.message_handler(commands=['help'])
 async def process_help_command(message: types.Message):
     await bot.send_message(message.from_user.id, "Мы можем чем-то помочь?")
 
-
+                             # Хендлер на обработку Расположение
 @dp.message_handler(lambda message: 'Расположение' in message.text.title())
 async def place(message: types.Message):
-    await bot.send_message(message.from_user.id, 'Мы находимся по адрессу:\n'
+    await bot.send_message(message.from_user.id, 'Мы находимся по адрессу:\n' #отправляем в личку по id
                                                  ' г. Волковыск ул. Панковой 47б 2-ой этаж')
 
-
-@dp.message_handler(lambda message: 'Услуги' in message.text.title())
+                            # Хендлер на обработку  Услуги
+@dp.message_handler(lambda message: 'Услуги' in message.text.title())      # при помощи lambda избавляемся от / и можем прописавать сами
 async def services(message: types.Message):
     await bot.send_message(message.from_user.id, 'Мы оказываем услуги:\n'
                                                  '-лазерного удаления волос\n'
@@ -41,18 +42,19 @@ async def services(message: types.Message):
                                                  '-обучению окрашиванию бровей краской/хной\n'
                                                  ' -обучению перманентному макияжу')
 
-ikb_price = InlineKeyboardMarkup(row_width=1)
-ikb_PM = InlineKeyboardButton(text='Прайс на ПМ', callback_data='price_permanent')
+            # Инлайн клавиатура для Прайс
+ikb_price = InlineKeyboardMarkup(row_width=1)                    # row_width это количество кнопок в строке
+ikb_PM = InlineKeyboardButton(text='Прайс на ПМ', callback_data='price_permanent')  #callback_data= это скрытая команда
 ikb_laser = InlineKeyboardButton(text='Прайс на лазер', callback_data='price_laser')
 ikb_brow = InlineKeyboardButton(text='Прайс на окрашивание хной/краской', callback_data='brow')
 ikb_price.add(ikb_PM, ikb_laser, ikb_brow)
 
-
+                 # Хендлер для кнопки назад
 @dp.message_handler(lambda message: 'Прайс' in message.text.title())
 async def price(message: types.Message):
     await bot.send_message(message.from_user.id, text='Выберите услугу:', reply_markup=ikb_price)
 
-
+                 # клава для Прайс/Прайс на ПМ
 ikb_choice_master = InlineKeyboardMarkup(row_width=2)
 ikb_Margo_price = InlineKeyboardButton(text='мастер\n Маргарита', callback_data='pm_margo')
 ikb_Nata_price = InlineKeyboardButton(text='мастер\n Наталья', callback_data='pm_nata')
@@ -60,30 +62,30 @@ ikb_back_price = InlineKeyboardButton(text='назад', callback_data='Прай
 ikb_choice_master.add(ikb_Nata_price, ikb_Margo_price)
 ikb_choice_master.row(ikb_back_price)
 
-
+                  # Хендлер для Прайс
 @dp.callback_query_handler(text='Прайс')
 async def back_choice_master(call: types.CallbackQuery):
     await bot.send_message(call.from_user.id, text='Выберите услугу:', reply_markup=ikb_price)
 
-
+                  # Для обработки кнопки мастер Марго по пути Прайс\Прайс на ПМ\мастер Маргарита
 @dp.callback_query_handler(text='pm_margo')
 async def price_margo(call: types.CallbackQuery):
     await call.message.answer('Стоимость перманентного макияжа с коррекцией 230BYN')
     await call.answer()
 
-
+                  # Для обработки кнопки мастер Наталья по пути Прайс\Прайс на ПМ\мастер Наталья
 @dp.callback_query_handler(text='pm_nata')
 async def price_nata(call: types.CallbackQuery):
     await call.message.answer('Стоимость перманентного макияжа с коррекцией 240BYN')
     await call.answer()
 
-
+                  # Для обработки кнопки Прайс для ПМ
 @dp.callback_query_handler(text='price_permanent')
 async def choice_master(call: types.CallbackQuery):
     await bot.send_message(call.from_user.id, text='Выберете мастера:', reply_markup=ikb_choice_master)
     await call.answer()
 
-
+                  # Для обработки кнопки Прайс на окрашивание хной/краской
 @dp.callback_query_handler(text='brow')
 async def price_brow(call: types.CallbackQuery):
     await call.message.answer('Стоимость услуги 20BYN В неё входит:\n'
@@ -92,19 +94,20 @@ async def price_brow(call: types.CallbackQuery):
                               '-Тридинг')
     await call.answer()
 
-
+            #клава для Прайс на лазер
 laser_choice = InlineKeyboardMarkup(row_width=2)
 laser_man = InlineKeyboardButton(text='Мужской прайс', callback_data='laser_man')
 laser_women = InlineKeyboardButton(text='Женский прайс', callback_data='laser_women')
-laser_choice.add(laser_man, laser_women)
+laser_choice.add(laser_man, laser_women, ikb_back_price)
 
-
+           # Прайс на лазер
 @dp.callback_query_handler(text='price_laser')
 async def price_laser(call: types.CallbackQuery):
     await bot.send_message(call.from_user.id, text='Какой прайс интересует?', reply_markup=laser_choice)
+    await call.answer()
 
 
-photo_2 = open('photo_2.jpg', 'rb')
+photo_2 = open('photo_2.jpg', 'rb')     #Добовление картинки
 @dp.callback_query_handler(text='laser_man')
 async def price_laser_man(call: types.CallbackQuery):
     await bot.send_photo(call.from_user.id, photo_2)
